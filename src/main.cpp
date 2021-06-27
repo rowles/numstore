@@ -62,13 +62,16 @@ int main(int argc, char *argv[]) {
     sr.write(mem_buf, nums);
     
   } else if (command == "read_chunked") {
-    std::unique_ptr<mmapped::mmap_file> mem_buf =
+    /*std::unique_ptr<mmapped::mmap_file> mem_buf =
     std::make_unique<mmapped::mmap_file>(file_path,
                                          mmapped::mmap_file::Mode::RO);
-    mem_buf->open();
+    mem_buf->open();*/
 
-    chunk_series::ChunkedSeries sr{};
-    sr.read(mem_buf);
+    chunk_series::ChunkedReader sr{};
+    series::IntType* arrr = new IntType[5000];
+    sr.read_into_buffer(arrr);
+
+
 
   } else if (command == "write") {
     std::vector<series::IntType> nums{};

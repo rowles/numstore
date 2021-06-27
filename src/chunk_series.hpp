@@ -28,9 +28,9 @@ struct FileHeader {
 };
 
 struct ChunkHeader {
-  std::uint64_t offset_pos{0};
-  std::uint64_t total_bytes{0};
-  std::uint64_t num_elements{0};
+  std::uint64_t offset_pos{0};    // 8
+  std::uint64_t total_bytes{0};   // 4
+  std::uint64_t num_elements{0};  // 4
 
   std::string to_string() const {
     std::stringstream ss;
@@ -46,6 +46,72 @@ struct ChunkHeader {
 inline size_t buf_size(const size_t vec_size) {
 
 }
+
+struct Headers {
+  const FileHeader file_header{};
+  const std::span<ChunkHeader> chunk_headers{};
+};
+
+class ChunkedReader {
+public:
+  ChunkedReader() {}
+  void open(std::string file_path) {
+    mem_buf = std::make_shared<mmapped::mmap_file>(file_path,
+                                         mmapped::mmap_file::Mode::RO);
+    mem_buf->open();
+  }
+  ~ChunkedReader() = default;
+
+  Headers read_headers() {
+    const FileHeader fhdr = *(reinterpret_cast<FileHeader *>(mem_buf->address().get()));
+
+    std::cout << "--------\n";
+    std::cout << fhdr.to_string() << '\n';
+    
+    auto addr = reinterpret_cast<ChunkHeader *>(mem_buf->address().get() + sizeof(FileHeader));
+    std::span<ChunkHeader> chunk_headers{addr, fhdr.num_chunks};
+
+    return Headers{
+      .file_header = fhdr,
+      .chunk_headers = chunk_headers
+    };
+    
+    //for (auto ch : chunk_headers) {
+    //  std::cout << ch.to_string() << '\n';
+      //read_chunk(mem_buf, ch);
+    //}
+  }
+
+  void read_chunk(const ChunkHeader& header, IntType* buffer) {
+    auto addr = mem_buf->address().get() + header.offset_pos;
+    p4ndec128v64(addr, header.total_bytes, buffer);
+
+    /*std::span<series::IntType> vec{out_buf.get(), header.num_elements};
+    std::ios_base::sync_with_stdio(false);
+    std::copy(vec.begin(), vec.end(),
+          std::ostream_iterator<series::IntType>(std::cout, "\n"));*/
+  }
+
+  void read_into_buffer(IntType* buffer) {
+    const auto headers = read_headers();
+    const auto chunk_size = headers.file_header.total_num_elements / headers.file_header.num_chunks;
+
+    std::unique_ptr<IntType[]> decompress_buf(new IntType[chunk_size + 1024]);
+
+    IntType* addr = buffer;
+
+    for (auto ch : headers.chunk_headers) {
+      read_chunk(ch, decompress_buf.get());
+
+      std::memcpy(addr, decompress_buf.get(), sizeof(IntType) * ch.num_elements);
+      addr += ch.num_elements;
+    }
+
+  }
+private:
+  const std::shared_ptr<mmapped::mmap_file> mem_buf;
+};
+
 
 class ChunkedSeries {
 public:
