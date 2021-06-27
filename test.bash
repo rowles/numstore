@@ -1,4 +1,6 @@
-time ( seq 10000 | ./build/numstore write -f out.vec )
-./build/numstore info -f out.vec
-./build/numstore read -f out.vec > /dev/null
+seq 100 | ./build/numstore write_chunked -f out2.vec
+
+./build/numstore read_chunked -f out2.vec
+#./build/numstore info -f out.vec
+#./build/numstore read -f out.vec > /dev/null
 

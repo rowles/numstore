@@ -87,6 +87,8 @@ void write(std::unique_ptr<mmapped::mmap_file> &mem_buf, const header &hdr,
   //            bytes_compressed);
 
   mem_buf->sync();
+
+
   printf("Old size: %li, new size: %li, ratio: %f \n", buf_size, sizeof(header) + bytes_compressed, ((float)(sizeof(header) + bytes_compressed))/((float)buf_size));
   mem_buf->truncate_close(sizeof(header) + bytes_compressed);
 }

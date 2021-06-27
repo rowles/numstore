@@ -7,6 +7,7 @@
 
 #include "mapped.h"
 #include "series.h"
+#include "chunk_series.hpp"
 
 // Read from stdin
 template <class T>
@@ -27,7 +28,7 @@ int main(int argc, char *argv[]) {
 
   std::string command = std::string(argv[1]);
 
-  if (command != "write" && command != "read" && command != "info") {
+  if (command != "write" && command != "read" && command != "info" && command != "write_chunked" && command != "read_chunked") {
     std::cerr << "command must be one of write, read, info" << std::endl;
   }
 
@@ -44,7 +45,32 @@ int main(int argc, char *argv[]) {
     }
   }
 
-  if (command == "write") {
+  if (command == "write_chunked") {
+    std::vector<series::IntType> nums{};
+
+    vector_from_stream(nums, std::cin);
+
+    printf("nums: %li\n", nums.size());
+    std::unique_ptr<mmapped::mmap_file> mem_buf =
+    std::make_unique<mmapped::mmap_file>(file_path,
+                                         mmapped::mmap_file::Mode::CR);
+
+    mem_buf->set_size(sizeof(series::IntType)*nums.size()+1024*10);
+    mem_buf->open();
+
+    chunk_series::ChunkedSeries sr{};
+    sr.write(mem_buf, nums);
+    
+  } else if (command == "read_chunked") {
+    std::unique_ptr<mmapped::mmap_file> mem_buf =
+    std::make_unique<mmapped::mmap_file>(file_path,
+                                         mmapped::mmap_file::Mode::RO);
+    mem_buf->open();
+
+    chunk_series::ChunkedSeries sr{};
+    sr.read(mem_buf);
+
+  } else if (command == "write") {
     std::vector<series::IntType> nums{};
 
     vector_from_stream(nums, std::cin);
