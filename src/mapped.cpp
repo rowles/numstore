@@ -68,7 +68,8 @@ size_t mmap_file::size() const noexcept { return len; }
 
 void mmap_file::set_size(const size_t len) {
   if (is_open()) {
-    throw mmap_error("cannot resize open mmap");
+    truncate(path.c_str(), len);
+    //throw mmap_error("cannot resize open mmap");
   }
   this->len = len;
 }

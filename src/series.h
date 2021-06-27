@@ -22,9 +22,9 @@ inline size_t buf_size(const size_t vec_size);
 
 header read_header(std::unique_ptr<mmapped::mmap_file> &mem_buf);
 
-std::unique_ptr<uint64_t[]> read(std::unique_ptr<mmapped::mmap_file> &mem_buf);
+std::unique_ptr<uint32_t[]> read(std::unique_ptr<mmapped::mmap_file> &mem_buf);
 
 void write(std::unique_ptr<mmapped::mmap_file> &mem_buf, const header &hdr,
-           std::vector<uint64_t> &vec);
+           std::vector<uint32_t> &vec);
 
 } // namespace series

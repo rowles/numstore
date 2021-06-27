@@ -1,6 +1,6 @@
 SHELL := /bin/bash
 
-CXX       ?= g++
+CXX       ?= g++-10
 CFLAGS    ?= -O3 -std=c++2a -Wall -Wextra -pedantic
 
 TURBOPFOR ?= ./ext/TurboPFor-Integer-Compression
@@ -15,9 +15,9 @@ clean:
 	rm -rf $(TURBOPFOR)
 
 
-build_deps: clean
-	git clone git@github.com:powturbo/TurboPFor-Integer-Compression.git $(TURBOPFOR)
-	make -C $(TURBOPFOR) -j
+build_deps: 
+	#git clone git@github.com:powturbo/TurboPFor-Integer-Compression.git $(TURBOPFOR)
+	CLAGS='-fPIC' make -C $(TURBOPFOR) -j
 
 
 .PHONY: build
