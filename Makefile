@@ -1,7 +1,7 @@
 SHELL := /bin/bash
 
 CXX       = g++-10
-CFLAGS    = -O3 -std=c++2a -Wall -Wextra -pedantic
+CFLAGS    = -march=native -O3 -std=c++2a -Wall -Wextra -pedantic
 
 TURBOPFOR ?= ./ext/TurboPFor-Integer-Compression
 src        = $(wildcard src/*.cpp)

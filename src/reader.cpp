@@ -3,6 +3,7 @@
 #include "mapped.h"
 #include "series.h"
 
+/*
 class ZReader {
 
   public:
@@ -46,4 +47,4 @@ class ZReader {
 
   private:
     int i;
-};
+};*/

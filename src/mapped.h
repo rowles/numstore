@@ -44,6 +44,7 @@ public:
 
   void open();
   void sync();
+  void truncate_close(const size_t new_size);
   void close();
   bool is_open() const noexcept;
 

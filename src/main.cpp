@@ -45,9 +45,10 @@ int main(int argc, char *argv[]) {
   }
 
   if (command == "write") {
-    std::vector<uint32_t> nums{};
+    std::vector<series::IntType> nums{};
 
     vector_from_stream(nums, std::cin);
+    printf("nums: %li\n", nums.size());
     const series::header hdr{.size = nums.size(),
                              .dtype = series::numeric_type::Int64};
 
@@ -63,12 +64,12 @@ int main(int argc, char *argv[]) {
     mem_buf->open();
     const auto size = series::read_header(mem_buf).size;
     const auto data = series::read(mem_buf);
-    std::span<uint32_t> vec{data.get(), size};
+    std::span<series::IntType> vec{data.get(), size};
 
     // print to stdout
     std::ios_base::sync_with_stdio(false);
     std::copy(vec.begin(), vec.end(),
-              std::ostream_iterator<uint64_t>(std::cout, "\n"));
+              std::ostream_iterator<series::IntType>(std::cout, "\n"));
   } else if (command == "info") {
     std::unique_ptr<mmapped::mmap_file> mem_buf =
         std::make_unique<mmapped::mmap_file>(file_path,

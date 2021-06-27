@@ -58,6 +58,16 @@ void mmap_file::close() {
   ::close(fd);
 }
 
+void mmap_file::truncate_close(const size_t new_size) {
+  if (mode == Mode::CR)
+    sync();
+
+  addr.reset(); // calls munmap
+
+  ftruncate(fd, new_size);
+  ::close(fd);
+}
+
 bool mmap_file::is_open() const noexcept {
   return fcntl(fd, F_GETFL) != -1 || errno != EBADF;
 }
