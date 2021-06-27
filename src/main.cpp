@@ -45,7 +45,7 @@ int main(int argc, char *argv[]) {
   }
 
   if (command == "write") {
-    std::vector<uint64_t> nums{};
+    std::vector<uint32_t> nums{};
 
     vector_from_stream(nums, std::cin);
     const series::header hdr{.size = nums.size(),
@@ -63,7 +63,7 @@ int main(int argc, char *argv[]) {
     mem_buf->open();
     const auto size = series::read_header(mem_buf).size;
     const auto data = series::read(mem_buf);
-    std::span<uint64_t> vec{data.get(), size};
+    std::span<uint32_t> vec{data.get(), size};
 
     // print to stdout
     std::ios_base::sync_with_stdio(false);
