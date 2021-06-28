@@ -51,15 +51,16 @@ int main(int argc, char *argv[]) {
     vector_from_stream(nums, std::cin);
 
     printf("nums: %li\n", nums.size());
-    std::unique_ptr<mmapped::mmap_file> mem_buf =
+    /*std::unique_ptr<mmapped::mmap_file> mem_buf =
     std::make_unique<mmapped::mmap_file>(file_path,
                                          mmapped::mmap_file::Mode::CR);
 
     mem_buf->set_size(sizeof(series::IntType)*nums.size()+1024*10);
-    mem_buf->open();
+    mem_buf->open();*/
 
-    chunk_series::ChunkedSeries sr{};
-    sr.write(mem_buf, nums);
+    chunk_series::ChunkedWriter sw{};
+    sw.open(file_path, sizeof(series::IntType)*nums.size()+1024*10);
+    sw.write(nums);
     
   } else if (command == "read_chunked") {
     /*std::unique_ptr<mmapped::mmap_file> mem_buf =
@@ -68,7 +69,7 @@ int main(int argc, char *argv[]) {
     mem_buf->open();*/
 
     chunk_series::ChunkedReader sr{};
-    sr.open("out2.vec");
+    sr.open(file_path);
     series::IntType* arrr = new series::IntType[5000];
     size_t size = sr.read_into_buffer(arrr, 5000);
 

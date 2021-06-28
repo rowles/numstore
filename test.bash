@@ -1,5 +1,5 @@
 echo "write_chunked"
-seq 11 | ./build/numstore write_chunked -f out2.vec
+seq 500 | ./build/numstore write_chunked -f out2.vec
 
 echo "read_chunked"
 ./build/numstore read_chunked -f out2.vec

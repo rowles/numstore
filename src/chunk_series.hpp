@@ -123,24 +123,22 @@ private:
 };
 
 
-class ChunkedSeries {
+class ChunkedWriter {
 public:
-  ChunkedSeries() {
+  ChunkedWriter() = default;
+  ~ChunkedWriter() = default;
+
+  inline void open(std::string file_path, size_t size) {
+    mem_buf = std::make_shared<mmapped::mmap_file>(file_path,
+                                       mmapped::mmap_file::Mode::CR);
+
+    mem_buf->set_size(size);
+    mem_buf->open();
   }
-  ~ChunkedSeries() = default;
-
-  /*FileHeader read_fileheader() {
-  }
-
-  ChunkHeader read_chunkheader(std::uint64_t offset) {
-  }
-
-  std::unique_ptr<IntType[]> read_chunk(std::uint64_t offset) {
-
-  }*/
 
 
-  void read(std::unique_ptr<mmapped::mmap_file> &mem_buf) {
+
+  /*void read(std::unique_ptr<mmapped::mmap_file> &mem_buf) {
     const FileHeader fhdr = *(reinterpret_cast<FileHeader *>(mem_buf->address().get()));
 
     std::cout << "--------\n";
@@ -165,12 +163,9 @@ public:
     std::ios_base::sync_with_stdio(false);
     std::copy(vec.begin(), vec.end(),
           std::ostream_iterator<series::IntType>(std::cout, "\n"));
-  }
+  }*/
 
-  void write(std::unique_ptr<mmapped::mmap_file> &mem_buf, std::vector<IntType> &vec, std::uint64_t chunk_size=10) {
-    ///////
-    // write chunks
-
+  inline void write(std::vector<IntType> &vec, std::uint64_t chunk_size=10) {
     const std::uint64_t num_chunks = (vec.size()/chunk_size) + std::min((std::uint64_t)vec.size()%chunk_size, 1UL);
 
     constexpr size_t file_header_offset{sizeof(FileHeader)};
@@ -179,20 +174,18 @@ public:
     auto base_addr = mem_buf->address().get() + file_header_offset + chunk_header_offset;
     size_t chunk_offset{0};
 
-    std::vector<size_t> chunk_byte_sizes{};
-    chunk_byte_sizes.reserve(num_chunks);
-
+    // iterate chunks to write
     for (std::uint64_t i = 0; i < num_chunks; ++i) {
       const auto data = vec.data() + i*chunk_size;
+
       // adjust chunk sizes for odd lots
       const auto size = (i == num_chunks-1 && vec.size()%chunk_size > 0) ? vec.size()%chunk_size : chunk_size;
 
+      // write chunk data
       const size_t bytes_compressed = p4nenc128v64(data, size, base_addr + chunk_offset);
       
-      printf("writing chunk, items:%li, bytes:%li, offset:%li\n", size, bytes_compressed, chunk_offset);
-      printf("%li %li \n", i*chunk_size*sizeof(IntType), data[0]);
-
-      const auto offset_pos = chunk_offset + file_header_offset + chunk_header_offset; // TODO: this
+      // write chunk header
+      const auto offset_pos = chunk_offset + file_header_offset + chunk_header_offset;
       const ChunkHeader chdr {
         .offset_pos=offset_pos,
         .total_bytes=bytes_compressed,
@@ -203,6 +196,8 @@ public:
       auto addr = mem_buf->address().get() + file_header_offset + sizeof(ChunkHeader)*i;
       std::memcpy(addr, chdrData, sizeof(ChunkHeader));
 
+      // printf("writing chunk, items:%li, bytes:%li, offset:%li\n", size, bytes_compressed, chunk_offset);
+      // printf("%li %li \n", i*chunk_size*sizeof(IntType), data[0]);
       chunk_offset += bytes_compressed;
     }
 
@@ -217,7 +212,7 @@ public:
   }
 
 private:
-  //std::unique_ptr<mmapped::mmap_file> mem_buf;
+  std::shared_ptr<mmapped::mmap_file> mem_buf;
 
 };
 
