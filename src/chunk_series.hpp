@@ -19,7 +19,8 @@ enum class Algo {
   TurboPFor,
   TurboPForV,
   TurboPForDelta,
-  TurboPForDelta1
+  TurboPForDelta1,
+  TurboPForDeltaZigZag,
 };
 
 using CompressFunct = std::function<size_t(std::uint64_t* in, size_t n, unsigned char* out)>;
@@ -31,6 +32,9 @@ inline CompressFunct get_compress_funct(const Algo& algo) noexcept {
   switch(algo) {
     case Algo::TurboPFor:  functor = p4nenc64; break;
     case Algo::TurboPForV: functor = p4nenc128v64; break;
+    case Algo::TurboPForDelta: functor = p4ndenc64; break;
+    case Algo::TurboPForDelta1: functor = p4nd1enc64; break;
+    case Algo::TurboPForDeltaZigZag: functor = p4nzenc64; break;
     default: functor = p4nenc64;
   }
 
@@ -43,6 +47,8 @@ inline DecompressFunct get_decompress_funct(const Algo& algo) noexcept {
   switch(algo) {
     case Algo::TurboPFor:  functor = p4ndec64; break;
     case Algo::TurboPForV: functor = p4ndec128v64; break;
+    case Algo::TurboPForDelta: functor = p4nddec64; break;
+    case Algo::TurboPForDeltaZigZag: functor = p4nzdec64; break;
     default: functor = p4ndec64;
   }
 

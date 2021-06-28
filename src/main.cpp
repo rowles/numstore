@@ -58,10 +58,10 @@ int main(int argc, char *argv[]) {
     mem_buf->set_size(sizeof(series::IntType)*nums.size()+1024*10);
     mem_buf->open();*/
 
-    chunk_series::ChunkedWriter sw{chunk_series::Algo::TurboPForV};
+    chunk_series::ChunkedWriter sw{chunk_series::Algo::TurboPForDeltaZigZag};
     sw.open(file_path, sizeof(series::IntType)*nums.size()+1024*10);
-    auto fsize = sw.write(nums);
-    printf("file size: %li, ratio: %.2f", fsize, ((float)fsize)/((float)sizeof(series::IntType)*nums.size()));
+    const auto fsize = sw.write(nums);
+    printf("file size: %li, ratio: %.5f", fsize, ((float)fsize)/((float)sizeof(series::IntType)*nums.size()));
     
   } else if (command == "read_chunked") {
     /*std::unique_ptr<mmapped::mmap_file> mem_buf =
