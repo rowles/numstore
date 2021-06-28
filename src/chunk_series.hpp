@@ -55,14 +55,15 @@ struct Headers {
 class ChunkedReader {
 public:
   ChunkedReader() {}
-  void open(std::string file_path) {
+  ~ChunkedReader() = default;
+
+  inline void open(std::string file_path) {
     mem_buf = std::make_shared<mmapped::mmap_file>(file_path,
                                          mmapped::mmap_file::Mode::RO);
     mem_buf->open();
   }
-  ~ChunkedReader() = default;
 
-  Headers read_headers() {
+  inline Headers read_headers() const noexcept {
     const FileHeader fhdr = *(reinterpret_cast<FileHeader *>(mem_buf->address().get()));
 
     std::cout << "--------\n";
@@ -75,25 +76,24 @@ public:
       .file_header = fhdr,
       .chunk_headers = chunk_headers
     };
-    
-    //for (auto ch : chunk_headers) {
-    //  std::cout << ch.to_string() << '\n';
-      //read_chunk(mem_buf, ch);
-    //}
   }
 
-  void read_chunk(const ChunkHeader& header, IntType* buffer) {
+  inline void read_chunk(const ChunkHeader& header, IntType* buffer) const noexcept {
     auto addr = mem_buf->address().get() + header.offset_pos;
-    p4ndec128v64(addr, header.total_bytes, buffer);
 
-    /*std::span<series::IntType> vec{out_buf.get(), header.num_elements};
-    std::ios_base::sync_with_stdio(false);
-    std::copy(vec.begin(), vec.end(),
-          std::ostream_iterator<series::IntType>(std::cout, "\n"));*/
+    p4ndec128v64(addr, header.total_bytes, buffer);
   }
 
-  void read_into_buffer(IntType* buffer) {
+  // Read chunks into a buffer
+  //
+  // Return number of elements reads
+  inline std::size_t read_into_buffer(IntType* buffer, size_t size) const noexcept {
     const auto headers = read_headers();
+
+    if (headers.file_header.total_num_elements > size) {
+      return 0;
+    }
+
     const auto chunk_size = headers.file_header.total_num_elements / headers.file_header.num_chunks;
 
     std::unique_ptr<IntType[]> decompress_buf(new IntType[chunk_size + 1024]);
@@ -101,15 +101,25 @@ public:
     IntType* addr = buffer;
 
     for (auto ch : headers.chunk_headers) {
+      std::cout << ch.to_string() << '\n';
       read_chunk(ch, decompress_buf.get());
 
       std::memcpy(addr, decompress_buf.get(), sizeof(IntType) * ch.num_elements);
       addr += ch.num_elements;
     }
 
+    return headers.file_header.total_num_elements;
   }
+
+  // Read chunks into a span
+  //
+  // Return number of elements reads
+  inline std::size_t read_into_buffer(std::span<IntType> buffer) const noexcept {
+    return read_into_buffer(buffer.data(), buffer.size());
+  }
+
 private:
-  const std::shared_ptr<mmapped::mmap_file> mem_buf;
+  std::shared_ptr<mmapped::mmap_file> mem_buf;
 };
 
 
@@ -161,7 +171,7 @@ public:
     ///////
     // write chunks
 
-    const std::uint64_t num_chunks = vec.size()/chunk_size;
+    const std::uint64_t num_chunks = (vec.size()/chunk_size) + std::min((std::uint64_t)vec.size()%chunk_size, 1UL);
 
     constexpr size_t file_header_offset{sizeof(FileHeader)};
     const size_t chunk_header_offset{sizeof(ChunkHeader)*num_chunks};
@@ -174,10 +184,10 @@ public:
 
     for (std::uint64_t i = 0; i < num_chunks; ++i) {
       const auto data = vec.data() + i*chunk_size;
-      const auto size = chunk_size;
+      // adjust chunk sizes for odd lots
+      const auto size = (i == num_chunks-1 && vec.size()%chunk_size > 0) ? vec.size()%chunk_size : chunk_size;
 
       const size_t bytes_compressed = p4nenc128v64(data, size, base_addr + chunk_offset);
-      //chunk_offset += bytes_compressed;
       
       printf("writing chunk, items:%li, bytes:%li, offset:%li\n", size, bytes_compressed, chunk_offset);
       printf("%li %li \n", i*chunk_size*sizeof(IntType), data[0]);
@@ -186,7 +196,7 @@ public:
       const ChunkHeader chdr {
         .offset_pos=offset_pos,
         .total_bytes=bytes_compressed,
-        .num_elements=chunk_size
+        .num_elements=size
       };
 
       unsigned char *chdrData = (unsigned char *)(&chdr);

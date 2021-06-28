@@ -68,8 +68,15 @@ int main(int argc, char *argv[]) {
     mem_buf->open();*/
 
     chunk_series::ChunkedReader sr{};
-    series::IntType* arrr = new IntType[5000];
-    sr.read_into_buffer(arrr);
+    sr.open("out2.vec");
+    series::IntType* arrr = new series::IntType[5000];
+    size_t size = sr.read_into_buffer(arrr, 5000);
+
+    std::span<series::IntType> vec{arrr, size};
+
+    std::ios_base::sync_with_stdio(false);
+    std::copy(vec.begin(), vec.end(),
+          std::ostream_iterator<series::IntType>(std::cout, "\n"));
 
 
 
