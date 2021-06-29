@@ -5,37 +5,41 @@ import zarr
 import random
 
 from numcodecs import blosc
-blosc.set_nthreads(1)
+#blosc.set_nthreads(1)
 
-ns = numstore.PyZReader(1)
 
-n = 10000000
+n = 10_000_000
 #data = [i for i in range(n)]
-data = [random.randint(0, 1000) for i in range(n)]
-
+#data = [random.randint(0, 1000) for i in range(n)]
+data = np.random.zipf(1.5, n)
 df = pd.DataFrame(data, columns=['a'])
 
-arr = np.array(data, dtype=np.int32)
-print(arr.dtype)
+arr = np.array(data, dtype=np.uint64)
+print(arr)
 
 
 def write_numstore():
-    ns.write(data)
+    w = numstore.Writer("test.vec")
+    w.write("test.vec".encode(), arr)
+    w.close()
 
 def write_parquet():
     df.to_parquet('test.parquet')
 
 def write_zarr():
-    zarr.save('test.zarr', arr, chunks=n)
+    zarr.save('test.zarr', arr)
 
 def read_numstore():
-    ns.read()
+    with numstore.Reader("test.vec".encode()) as w:
+        _ = w.read()
+        np.sum(_)
 
 def read_parquet():
     pd.read_parquet('test.parquet')
 
 def read_zarr():
-    zarr.load('test.zarr')
+    _ = zarr.load('test.zarr')
+    np.sum(_)
 
 def timereps(reps, func):
     from time import time

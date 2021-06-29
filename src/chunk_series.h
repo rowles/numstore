@@ -93,8 +93,12 @@ struct Headers {
 
 class ChunkedReader {
 public:
-  ChunkedReader() {}
-  ~ChunkedReader() = default;
+  ChunkedReader() {
+    //printf("ChunkedReader()\n");
+  }
+  ~ChunkedReader() {
+    //printf("~ChunkedReader()\n");
+  }
 
   inline void open(std::string file_path) {
     mem_buf = std::make_shared<mmapped::mmap_file>(file_path,

@@ -38,6 +38,7 @@ public:
             const size_t _len = 0)
       : path(_path), mode(_mode), len(_len){};
   ~mmap_file() {
+    //printf("~mmap_file()\n");
     if (is_open())
       close();
   }

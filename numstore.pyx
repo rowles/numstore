@@ -32,6 +32,18 @@ cdef class Writer:
     def __cinit__(self, file_path):
         self.thisptr = new ChunkedWriter(Algo.TurboPFor)
 
+    def __dealloc___(self):
+        self.close()
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *exc):
+        self.close()
+
+    def close(self):
+        del self.thisptr
+
     def write(self, string file_path, np.npy_uint64[::1] mview):
         self.thisptr.open(file_path, mview.shape[0]*8 + 1024)
         self.thisptr.write(&mview[0], mview.shape[0])
@@ -43,6 +55,18 @@ cdef class Reader:
     def __cinit__(self, file_path):
         self.thisptr = new ChunkedReader()
         self.thisptr.open(file_path)
+
+    def __dealloc___(self):
+        self.close()
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *exc):
+        self.close()
+
+    def close(self):
+        del self.thisptr
 
     def read(self):
         size = self.thisptr.size()

@@ -8,9 +8,10 @@ w = numstore.Writer("wtf")
 
 w.write("wtf".encode(), arr)
 
-N = 10_000_000
+N = 100_000_000
 arr = np.array(list(range(N)), dtype=np.uint64)
-
+s = np.sum(arr)
+print(s)
 
 s = time.time()
 w.write("big".encode(), arr)
@@ -21,9 +22,12 @@ print('big write', e-s)
 
 r = numstore.Reader('big'.encode())
 s = time.time()
-r.read()
+arr2 = r.read()
 e = time.time()
+
 
 print('big read', e-s)
 
+s = np.sum(arr2)
+print(s)
 
