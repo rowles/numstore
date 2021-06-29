@@ -43,7 +43,7 @@ build_ext:
 	git clone $(TURBOPFOR_REPO) $(TURBOPFOR)
 	make -C $(TURBOPFOR) -j
 
-build_lib:
+build_libnumstore:
 	$(CXX) -I./src/ $(CFLAGS) src/mapped.cpp src/chunk_series.cpp \
          $(TURBOPFOR_OBJS) -shared -o libnumstore.so
 
