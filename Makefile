@@ -1,66 +1,60 @@
 SHELL := /bin/bash
 
 CXX       = g++-10
-CFLAGS    = -march=native -O3 -std=c++2a -Wall -Wextra -pedantic
+CFLAGS    ?= -march=native -O3 -std=c++2a -Wall -Wextra -pedantic -fPIC
 
-TURBOPFOR ?= ./ext/TurboPFor-Integer-Compression
-src        = $(wildcard src/*.cpp)
+TURBOPFOR_REPO ?= git@github.com:rowles/TurboPFor-Integer-Compression.git
+TURBOPFOR      ?= ./ext/TurboPFor-Integer-Compression
+TURBOPFOR_OBJS = $(TURBOPFOR)/bitunpack.o \
+                 $(TURBOPFOR)/bitunpack_sse.o \
+                 $(TURBOPFOR)/bitunpack_avx2.o \
+                 $(TURBOPFOR)/bitpack.o \
+                 $(TURBOPFOR)/bitpack_sse.o \
+                 $(TURBOPFOR)/bitpack_avx2.o \
+                 $(TURBOPFOR)/vp4c.o \
+                 $(TURBOPFOR)/vp4c_sse.o \
+                 $(TURBOPFOR)/vp4c_avx2.o \
+                 $(TURBOPFOR)/vp4d.o \
+                 $(TURBOPFOR)/vp4d_sse.o \
+                 $(TURBOPFOR)/vp4d_avx2.o \
+                 $(TURBOPFOR)/vint.o \
+                 $(TURBOPFOR)/vsimple.o \
+                 $(TURBOPFOR)/bitutil.o
 
 
 all:
 
 
 clean:
-	rm -rf build
+	rm -rf *.so
 	rm -rf $(TURBOPFOR)
+	rm -rf venv
+	rm -rf data/
+	rm -rf build/
+	rm -rf __pycache__/
+	rm -rf numstore.cpp
 
+setup_venv:
+	python3 -m venv venv \
+          && source ./venv/bin/activate \
+          && pip install cython pytest numpy
 
-build_deps: 
-	#git clone git@github.com:powturbo/TurboPFor-Integer-Compression.git $(TURBOPFOR)
-	CLAGS='-fPIC' make -C $(TURBOPFOR) -j
-
-
-.PHONY: build
-build: 
-	mkdir -p build
-	$(CXX) $(CFLAGS) -o build/numstore $(src) \
-		 $(TURBOPFOR)/bitunpack.o \
-		 $(TURBOPFOR)/bitunpack_sse.o \
-		 $(TURBOPFOR)/bitunpack_avx2.o \
-		 $(TURBOPFOR)/bitpack.o \
-		 $(TURBOPFOR)/bitpack_sse.o \
-		 $(TURBOPFOR)/bitpack_avx2.o \
-		 $(TURBOPFOR)/vp4c.o \
-		 $(TURBOPFOR)/vp4c_sse.o \
-		 $(TURBOPFOR)/vp4c_avx2.o \
-		 $(TURBOPFOR)/vp4d.o \
-		 $(TURBOPFOR)/vp4d_sse.o \
-		 $(TURBOPFOR)/vp4d_avx2.o \
-		 $(TURBOPFOR)/vint.o \
-		 $(TURBOPFOR)/vsimple.o \
-		 $(TURBOPFOR)/bitutil.o
-
+build_ext:
+	git clone $(TURBOPFOR_REPO) $(TURBOPFOR)
+	make -C $(TURBOPFOR) -j
 
 build_lib:
-	$(CXX) -I./src/ $(CFLAGS) -fPIC src/mapped.cpp src/chunk_series.cpp \
-         $(TURBOPFOR)/bitunpack.o \
-         $(TURBOPFOR)/bitunpack_sse.o \
-         $(TURBOPFOR)/bitunpack_avx2.o \
-         $(TURBOPFOR)/bitpack.o \
-         $(TURBOPFOR)/bitpack_sse.o \
-         $(TURBOPFOR)/bitpack_avx2.o \
-         $(TURBOPFOR)/vp4c.o \
-         $(TURBOPFOR)/vp4c_sse.o \
-         $(TURBOPFOR)/vp4c_avx2.o \
-         $(TURBOPFOR)/vp4d.o \
-         $(TURBOPFOR)/vp4d_sse.o \
-         $(TURBOPFOR)/vp4d_avx2.o \
-         $(TURBOPFOR)/vint.o \
-         $(TURBOPFOR)/vsimple.o \
-         $(TURBOPFOR)/bitutil.o \
-	 -shared -o libnumstore.so
+	$(CXX) -I./src/ $(CFLAGS) src/mapped.cpp src/chunk_series.cpp \
+         $(TURBOPFOR_OBJS) -shared -o libnumstore.so
 
 build_cython:
 	source ./venv/bin/activate && \
+	  export CC=$(CXX) && \
 	  export LDFLAGS="-L." && \
 	  python3 setup.py build_ext -i
+
+test:
+	source ./venv/bin/activate && \
+	  export LD_LIBRARY_PATH="." && \
+	  mkdir data/ && \
+	  pytest -vvv test.py
