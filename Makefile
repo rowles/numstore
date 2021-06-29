@@ -3,7 +3,7 @@ SHELL := /bin/bash
 CXX       = g++-10
 CFLAGS    ?= -march=native -O3 -std=c++2a -Wall -Wextra -pedantic -fPIC
 
-TURBOPFOR_REPO ?= git@github.com:rowles/TurboPFor-Integer-Compression.git
+TURBOPFOR_REPO ?= https://github.com/rowles/TurboPFor-Integer-Compression.git
 TURBOPFOR      ?= ./ext/TurboPFor-Integer-Compression
 TURBOPFOR_OBJS = $(TURBOPFOR)/bitunpack.o \
                  $(TURBOPFOR)/bitunpack_sse.o \
