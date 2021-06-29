@@ -20,7 +20,7 @@ TURBOPFOR_OBJS = $(TURBOPFOR)/bitunpack.o \
                  $(TURBOPFOR)/vint.o \
                  $(TURBOPFOR)/vsimple.o \
                  $(TURBOPFOR)/bitutil.o
-
+INCLUDES = -I./ext/ -I./src/
 
 all:
 
@@ -44,7 +44,7 @@ build_ext:
 	make -C $(TURBOPFOR) -j
 
 build_libnumstore:
-	$(CXX) -I./src/ $(CFLAGS) src/mapped.cpp src/chunk_series.cpp \
+	$(CXX) $(INCLUDES) $(CFLAGS) src/mapped.cpp src/chunk_series.cpp \
          $(TURBOPFOR_OBJS) -shared -o libnumstore.so
 
 build_cython:

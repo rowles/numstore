@@ -6,7 +6,7 @@
 #include <span>
 #include <functional>
 
-#include "../ext/TurboPFor-Integer-Compression/vp4.h"
+#include "TurboPFor-Integer-Compression/vp4.h"
 #include "mapped.h"
 
 
