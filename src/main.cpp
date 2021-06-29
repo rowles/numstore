@@ -58,7 +58,7 @@ int main(int argc, char *argv[]) {
     mem_buf->set_size(sizeof(series::IntType)*nums.size()+1024*10);
     mem_buf->open();*/
 
-    chunk_series::ChunkedWriter sw{chunk_series::Algo::TurboPForDeltaZigZag};
+    chunk_series::ChunkedWriter sw{chunk_series::Algo::TurboPFor};
     sw.open(file_path, sizeof(series::IntType)*nums.size()+1024*10);
     const auto fsize = sw.write(nums);
     printf("file size: %li, ratio: %.5f", fsize, ((float)fsize)/((float)sizeof(series::IntType)*nums.size()));
@@ -71,14 +71,16 @@ int main(int argc, char *argv[]) {
 
     chunk_series::ChunkedReader sr{};
     sr.open(file_path);
-    series::IntType* arrr = new series::IntType[5000];
-    size_t size = sr.read_into_buffer(arrr, 5000);
+    const auto rsize = sr.read_headers().file_header.total_num_elements;
+    series::IntType* arrr = new series::IntType[rsize + 4096];
+    size_t size = sr.read_into_buffer(arrr, rsize + 4096);
+    printf("%li size", size);
 
     std::span<series::IntType> vec{arrr, size};
 
-    std::ios_base::sync_with_stdio(false);
+    /*std::ios_base::sync_with_stdio(false);
     std::copy(vec.begin(), vec.end(),
-          std::ostream_iterator<series::IntType>(std::cout, "\n"));
+          std::ostream_iterator<series::IntType>(std::cout, "\n"));*/
 
 
 

@@ -40,3 +40,22 @@ build:
 		 $(TURBOPFOR)/vsimple.o \
 		 $(TURBOPFOR)/bitutil.o
 
+
+build_lib:
+	$(CXX) -I./src/ $(CFLAGS) -fPIC src/mapped.cpp src/chunk_series.cpp \
+         $(TURBOPFOR)/bitunpack.o \
+         $(TURBOPFOR)/bitunpack_sse.o \
+         $(TURBOPFOR)/bitunpack_avx2.o \
+         $(TURBOPFOR)/bitpack.o \
+         $(TURBOPFOR)/bitpack_sse.o \
+         $(TURBOPFOR)/bitpack_avx2.o \
+         $(TURBOPFOR)/vp4c.o \
+         $(TURBOPFOR)/vp4c_sse.o \
+         $(TURBOPFOR)/vp4c_avx2.o \
+         $(TURBOPFOR)/vp4d.o \
+         $(TURBOPFOR)/vp4d_sse.o \
+         $(TURBOPFOR)/vp4d_avx2.o \
+         $(TURBOPFOR)/vint.o \
+         $(TURBOPFOR)/vsimple.o \
+         $(TURBOPFOR)/bitutil.o \
+	 -shared -o libnumstore.so

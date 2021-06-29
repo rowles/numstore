@@ -2,6 +2,10 @@ from distutils.core import setup
 from distutils.extension import Extension
 from Cython.Distutils import build_ext
 
+from distutils import sysconfig
+import numpy
+
+sysconfig.get_config_vars()['CXX'] = 'g++-10'
 
 turbo_base="./ext/TurboPFor-Integer-Compression"
 objs = [
@@ -28,12 +32,14 @@ setup(
             Extension("numstore",
                 [
                     "numstore.pyx",
-                    "src/reader.cpp",
-                    "src/mapped.cpp",
-                    "src/series.cpp",
-                ], language="c++",
-                extra_objects=objs,
-                extra_compile_args=['-fPIC', "-std=c++2a"],
+                    #"src/chunk_series.cpp",
+                    #"src/mapped.cpp",
+                ],
+                language="c++",
+                include_dirs=[numpy.get_include()],
+                #extra_objects=objs,
+                libraries=['numstore'],
+                extra_compile_args=['-I./src/', '-fPIC', "-std=c++2a"],
             )
         ],
         cmdclass = {'build_ext': build_ext}
