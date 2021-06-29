@@ -7,7 +7,7 @@
 
 #include "mapped.h"
 #include "series.h"
-#include "chunk_series.hpp"
+#include "chunk_series.h"
 
 // Read from stdin
 template <class T>
@@ -46,7 +46,7 @@ int main(int argc, char *argv[]) {
   }
 
   if (command == "write_chunked") {
-    std::vector<series::IntType> nums{};
+    /*std::vector<series::IntType> nums{};
 
     vector_from_stream(nums, std::cin);
 
@@ -56,12 +56,12 @@ int main(int argc, char *argv[]) {
                                          mmapped::mmap_file::Mode::CR);
 
     mem_buf->set_size(sizeof(series::IntType)*nums.size()+1024*10);
-    mem_buf->open();*/
+    mem_buf->open();
 
     chunk_series::ChunkedWriter sw{chunk_series::Algo::TurboPFor};
     sw.open(file_path, sizeof(series::IntType)*nums.size()+1024*10);
     const auto fsize = sw.write(nums);
-    printf("file size: %li, ratio: %.5f", fsize, ((float)fsize)/((float)sizeof(series::IntType)*nums.size()));
+    printf("file size: %li, ratio: %.5f", fsize, ((float)fsize)/((float)sizeof(series::IntType)*nums.size()));*/
     
   } else if (command == "read_chunked") {
     /*std::unique_ptr<mmapped::mmap_file> mem_buf =
@@ -78,14 +78,14 @@ int main(int argc, char *argv[]) {
 
     std::span<series::IntType> vec{arrr, size};
 
-    /*std::ios_base::sync_with_stdio(false);
+    std::ios_base::sync_with_stdio(false);
     std::copy(vec.begin(), vec.end(),
-          std::ostream_iterator<series::IntType>(std::cout, "\n"));*/
+          std::ostream_iterator<series::IntType>(std::cout, "\n"));
 
 
 
   } else if (command == "write") {
-    std::vector<series::IntType> nums{};
+    /*std::vector<series::IntType> nums{};
 
     vector_from_stream(nums, std::cin);
     printf("nums: %li\n", nums.size());
@@ -96,7 +96,7 @@ int main(int argc, char *argv[]) {
         std::make_unique<mmapped::mmap_file>(file_path,
                                              mmapped::mmap_file::Mode::CR);
 
-    series::write(mem_buf, hdr, nums);
+    series::write(mem_buf, hdr, nums);*/
   } else if (command == "read") {
     std::unique_ptr<mmapped::mmap_file> mem_buf =
         std::make_unique<mmapped::mmap_file>(file_path,

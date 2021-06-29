@@ -102,6 +102,10 @@ public:
     mem_buf->open();
   }
 
+  inline size_t size() const {
+    return read_headers().file_header.total_num_elements;
+  }
+
   inline Headers read_headers() const noexcept {
     const FileHeader fhdr = *(reinterpret_cast<FileHeader *>(mem_buf->address().get()));
 
@@ -225,7 +229,7 @@ public:
     return file_size;
   }
 
-  inline size_t write(IntType* data, size_t& size) {
+  inline size_t write(IntType* data, size_t size) {
     std::span<IntType> tmp_span{data, size};
       return write(tmp_span);
     }

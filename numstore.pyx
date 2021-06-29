@@ -19,15 +19,12 @@ cdef extern from "chunk_series.h" namespace "chunk_series":
         void open(string path, size_t size)
         size_t write(np.npy_uint64* data, int size)
 
+    cdef cppclass ChunkedReader:
+        ChunkedReader()
+        void open(string path)
+        size_t read_into_buffer(np.npy_uint64* data, int size)
+        size_t size()
 
-cdef extern from "<valarray>" namespace "std":
-    cdef cppclass valarray[T]:
-        valarray()
-        valarray(int)  # constructor: empty constructor
-        T& operator[](int)  # get/set element
-
-import numpy as np
-cimport numpy as np
 
 cdef class Writer:
     cdef ChunkedWriter *thisptr
@@ -36,35 +33,22 @@ cdef class Writer:
         self.thisptr = new ChunkedWriter(Algo.TurboPFor)
 
     def write(self, string file_path, np.npy_uint64[::1] mview):
-        self.thisptr.open(file_path, 1000000)
-        cdef size_t n = mview.shape[0]
-        cdef np.npy_uint64* data = &mview[0]
-        self.thisptr.write(&mview[0], len(mview))
+        self.thisptr.open(file_path, mview.shape[0]*8 + 1024)
+        self.thisptr.write(&mview[0], mview.shape[0])
 
 
+cdef class Reader:
+    cdef ChunkedReader *thisptr
 
-"""
-        int get_i()
-        vector[int] get_v()
-        void write(vector[unsigned int])
-        #void write(unsigned int[::1])
-        vector[unsigned int] read()
-        #unsigned int[::1] read()
+    def __cinit__(self, file_path):
+        self.thisptr = new ChunkedReader()
+        self.thisptr.open(file_path)
 
-cdef class PyZReader:
-    cdef ZReader *thisptr      # hold a C++ instance which we're wrapping
-    def __cinit__(self, int i):
-        self.thisptr = new ZReader(i)
-    def __dealloc__(self):
-        del self.thisptr
-    def get_i(self):
-        return self.thisptr.get_i()
-    def get_v(self):
-        return self.thisptr.get_v()
-    @cython.boundscheck(False)
-    @cython.wraparound(False)
-    def write(self, vector[unsigned int] nums):
-        return self.thisptr.write(nums)
     def read(self):
-        return self.thisptr.read()
-        """
+        size = self.thisptr.size()
+        cdef np.ndarray[np.npy_uint64, ndim=1] result = np.zeros(size, dtype = np.uint64)
+
+        self.thisptr.read_into_buffer(&result[0], size)
+
+        return result
+
