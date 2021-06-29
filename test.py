@@ -1,27 +1,45 @@
+import numpy as np
 import numstore
-import os
-import random
 import time
-import numpy
 
-r = numstore.PyZReader(0)
-n = 1000000
-header_size = 16
-#data = [random.randint(0, 10000) for i in range(n)]
-#data = numpy.random.zipf(a=1.5, size=n)
-data = numpy.random.randint(low=1, high=1000000, size=n)
-bytes_per_int = 4
-s = time.time()
-r.write(data)
-e = time.time()
 
-b = os.path.getsize('test.vec') - header_size
-print(f'''
-n: {n}
-time: {(e-s)*1000}
-bytes: {b} ({b/(1024**2)} mb)
-bytes/int: {b/n}
-bits/int: {b*8/n}
-mem: {n*bytes_per_int} ({n*bytes_per_int/(1024**2)} mb)
-ratio: {b/(n*bytes_per_int)}
-''')
+def test_small():
+    arr = np.array([111, 55, 11], dtype=np.uint64)
+
+    w = numstore.Writer("data/small.vec")
+    w.write("data/small.vec".encode(), arr)
+    w.close()
+
+    r = numstore.Reader('data/small.vec'.encode())
+    arr2 = r.read()
+    r.close()
+
+    assert arr.all() == arr2.all()
+
+
+def test_big():
+    N = 5_000_000
+    arr = np.array(range(N), dtype=np.uint64)
+
+    w = numstore.Writer("data/big.vec")
+    w.write("data/big.vec".encode(), arr)
+    w.close()
+    
+    r = numstore.Reader('data/big.vec'.encode())
+    arr2 = r.read()
+    r.close()
+    
+    assert arr.all() == arr2.all()
+
+
+def test_context():
+    arr = np.array([1, 2, 3], dtype=np.uint64)
+
+    with numstore.Writer("data/small2.vec") as w:
+        w.write("data/small2.vec".encode(), arr)
+
+    with numstore.Reader('data/small2.vec'.encode()) as r:
+        arr2 = r.read()
+
+    assert arr.all() == arr2.all()
+

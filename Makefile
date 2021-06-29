@@ -59,3 +59,8 @@ build_lib:
          $(TURBOPFOR)/vsimple.o \
          $(TURBOPFOR)/bitutil.o \
 	 -shared -o libnumstore.so
+
+build_cython:
+	source ./venv/bin/activate && \
+	  export LDFLAGS="-L." && \
+	  python3 setup.py build_ext -i
