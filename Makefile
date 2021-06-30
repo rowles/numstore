@@ -21,7 +21,7 @@ TURBOPFOR_OBJS = $(TURBOPFOR)/bitunpack.o \
                  $(TURBOPFOR)/vsimple.o \
                  $(TURBOPFOR)/bitutil.o
 INCLUDES = -I./ext/ -I./include/
-
+SRC = src/mapped.cpp src/chunk_series.cpp
 all:
 
 
@@ -44,7 +44,7 @@ build_ext:
 	make -C $(TURBOPFOR) -j
 
 build_libnumstore:
-	$(CXX) $(INCLUDES) $(CFLAGS) src/mapped.cpp src/chunk_series.cpp \
+	$(CXX) $(INCLUDES) $(CFLAGS) $(SRC) \
          $(TURBOPFOR_OBJS) -shared -o libnumstore.so
 
 build_cython:
@@ -56,5 +56,12 @@ build_cython:
 test:
 	source ./venv/bin/activate && \
 	  export LD_LIBRARY_PATH="." && \
-	  mkdir data/ && \
+	  mkdir -p data/ && \
 	  pytest -vvv test.py
+
+benchmark:
+	source ./venv/bin/activate && \
+	  pip install pandas zarr pyarrow && \
+	  export LD_LIBRARY_PATH="." && \
+	  python benchmark.py
+
