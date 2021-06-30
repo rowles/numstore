@@ -134,6 +134,8 @@ private:
 class ChunkedWriter {
 public:
   ChunkedWriter(const Algo& _algo) : compress_funct(get_compress_funct(_algo)) {};
+  // cython 29.x doesn't like enums
+  ChunkedWriter(const int& _algo_num) : compress_funct(get_compress_funct(static_cast<Algo>(_algo_num))) {};
   ~ChunkedWriter() = default;
 
   void open(std::string file_path, size_t size);
@@ -141,8 +143,8 @@ public:
   // Write array into file
   //
   // Return bytes written
-  size_t write(std::span<IntType> &vec, std::uint64_t chunk_size=1000000);
-  size_t write(IntType* data, size_t size);
+  size_t write(std::span<IntType> &vec, std::uint64_t chunk_size=127);
+  size_t write(IntType* data, size_t size, std::uint64_t chunk_size=127);
 
 private:
   std::shared_ptr<mmapped::mmap_file> mem_buf;

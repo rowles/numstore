@@ -30,7 +30,7 @@ def run_benchmark(arr, reps=5):
     df = pd.DataFrame(arr, columns=['value'])
 
     def write_numstore():
-        w = numstore.Writer("test.vec")
+        w = numstore.Writer("TurboPForV")
         w.write("test.vec".encode(), arr)
         w.close()
     

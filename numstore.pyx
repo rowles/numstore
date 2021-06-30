@@ -13,11 +13,12 @@ cimport numpy as np
 cdef extern from "chunk_series.h" namespace "chunk_series":
     enum Algo 'chunk_series::Algo':
         TurboPFor 'chunk_series::Algo::TurboPFor' = 0
+        TurboPForV 'chunk_series::Algo::TurboPForV' = 1
 
     cdef cppclass ChunkedWriter:
-        ChunkedWriter(const Algo& _algo)
+        ChunkedWriter(const int& _algo_num)
         void open(string path, size_t size)
-        size_t write(np.npy_uint64* data, int size)
+        size_t write(np.npy_uint64* data, int size, int chunk_size)
 
     cdef cppclass ChunkedReader:
         ChunkedReader()
@@ -26,11 +27,22 @@ cdef extern from "chunk_series.h" namespace "chunk_series":
         size_t size()
 
 
+ALGO_STR = {
+    'TurboPFor': Algo.TurboPFor,
+    'TurboPForV': Algo.TurboPForV,
+}
+
+
+def algo_from_str(algo_str):
+    return ALGO_STR[algo_str]
+
+
 cdef class Writer:
     cdef ChunkedWriter *thisptr
 
-    def __cinit__(self, file_path):
-        self.thisptr = new ChunkedWriter(Algo.TurboPFor)
+    def __cinit__(self, algo):
+        algo = algo_from_str(algo)
+        self.thisptr = new ChunkedWriter(algo)
 
     def __dealloc___(self):
         self.close()
@@ -44,9 +56,9 @@ cdef class Writer:
     def close(self):
         del self.thisptr
 
-    def write(self, string file_path, np.npy_uint64[::1] mview):
+    def write(self, string file_path, np.npy_uint64[::1] mview, chunk_size=100):
         self.thisptr.open(file_path, mview.shape[0]*8 + 1024)
-        self.thisptr.write(&mview[0], mview.shape[0])
+        self.thisptr.write(&mview[0], mview.shape[0], chunk_size)
 
 
 cdef class Reader:

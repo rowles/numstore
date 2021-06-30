@@ -38,7 +38,7 @@ std::size_t ChunkedReader::read_into_buffer(IntType* buffer, size_t size) const 
   const auto decompress_funct = get_decompress_funct(headers.file_header.algo);
 
   const auto chunk_size = headers.file_header.total_num_elements / headers.file_header.num_chunks;
-  std::unique_ptr<IntType[]> decompress_buf = std::make_unique<IntType[]>(chunk_size + 4096);
+  std::unique_ptr<IntType[]> decompress_buf = std::make_unique<IntType[]>(chunk_size + 4194304);
 
   IntType* addr = buffer;
 
@@ -118,9 +118,9 @@ size_t ChunkedWriter::write(std::span<IntType> &vec, std::uint64_t chunk_size) {
   return file_size;
 }
 
-size_t ChunkedWriter::write(IntType* data, size_t size) {
+size_t ChunkedWriter::write(IntType* data, size_t size, std::uint64_t chunk_size) {
   std::span<IntType> tmp_span{data, size};
-  return write(tmp_span);
+  return write(tmp_span, chunk_size);
 }
 
 
