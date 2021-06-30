@@ -1,7 +1,7 @@
 name: Build & Test
 on: [push]
 jobs:
-  utest:
+  build_test:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -21,4 +21,6 @@ jobs:
         run: make build_cython
       - name: Run python tests
         run: make test
+      - name: Run Benchmarks
+        run: make benchmark
 
