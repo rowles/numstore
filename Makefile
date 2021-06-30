@@ -20,7 +20,7 @@ TURBOPFOR_OBJS = $(TURBOPFOR)/bitunpack.o \
                  $(TURBOPFOR)/vint.o \
                  $(TURBOPFOR)/vsimple.o \
                  $(TURBOPFOR)/bitutil.o
-INCLUDES = -I./ext/ -I./src/
+INCLUDES = -I./ext/ -I./include/
 
 all:
 

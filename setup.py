@@ -16,7 +16,7 @@ setup(
             language="c++",
             include_dirs=[numpy.get_include()],
             libraries=["numstore"],
-            extra_compile_args=["-I./src/", "-I./ext/", "-fPIC", "-std=c++2a"],
+            extra_compile_args=["-I./include/", "-I./ext/", "-fPIC", "-std=c++2a"],
         )
     ],
     cmdclass={"build_ext": build_ext},
