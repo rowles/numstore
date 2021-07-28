@@ -10,8 +10,8 @@ import numpy as np
 
 arr = np.array([1, 2, 3], dtype=np.uint64)
 
-with numstore.Writer('TurboPFor') as w:
-    w.write('data/small.vec', arr)
+with numstore.Writer('TurboPFor', 'data/small.vec') as w:
+    w.write(arr)
 
 with numstore.Reader('data/small.vec') as r:
     read_arr = r.read()

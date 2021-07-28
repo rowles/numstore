@@ -30,8 +30,8 @@ def run_benchmark(arr, reps=5):
     df = pd.DataFrame(arr, columns=['value'])
 
     def write_numstore():
-        w = numstore.Writer("TurboPFor")
-        w.write("test.vec".encode(), arr, chunk_size=100_000)
+        w = numstore.Writer("TurboPFor", "test.vec")
+        w.write(arr, chunk_size=100_000)
         w.close()
     
     def write_parquet():
@@ -41,7 +41,7 @@ def run_benchmark(arr, reps=5):
         zarr.save('test.zarr', arr)
     
     def read_numstore():
-        with numstore.Reader("test.vec".encode()) as w:
+        with numstore.Reader("test.vec") as w:
             _ = w.read()
     
     def read_parquet():

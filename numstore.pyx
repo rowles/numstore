@@ -39,10 +39,12 @@ def algo_from_str(algo_str):
 
 cdef class Writer:
     cdef ChunkedWriter *thisptr
+    cdef string file_path
 
-    def __cinit__(self, algo):
+    def __cinit__(self, algo, str file_path):
         algo = algo_from_str(algo)
         self.thisptr = new ChunkedWriter(algo)
+        self.file_path = file_path.encode()
 
     def __dealloc___(self):
         self.close()
@@ -56,17 +58,17 @@ cdef class Writer:
     def close(self):
         del self.thisptr
 
-    def write(self, string file_path, np.npy_uint64[::1] mview, chunk_size=100):
-        self.thisptr.open(file_path, mview.shape[0]*8 + 1024)
+    def write(self, np.npy_uint64[::1] mview, chunk_size=100):
+        self.thisptr.open(self.file_path, mview.shape[0]*8 + 1024)
         self.thisptr.write(&mview[0], mview.shape[0], chunk_size)
 
 
 cdef class Reader:
     cdef ChunkedReader *thisptr
 
-    def __cinit__(self, file_path):
+    def __cinit__(self, str file_path):
         self.thisptr = new ChunkedReader()
-        self.thisptr.open(file_path)
+        self.thisptr.open(file_path.encode())
 
     def __dealloc___(self):
         self.close()
